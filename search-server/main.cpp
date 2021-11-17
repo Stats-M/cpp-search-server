@@ -1,6 +1,7 @@
 // search_server_s1_t2_v2.cpp
 
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -12,6 +13,9 @@
 using namespace std;
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+
+// Константа точности сравнения вещественных чисел (значений релевантности)
+const double EPSILON = 1e-6;
 
 string ReadLine() {
     string s;
@@ -92,7 +96,8 @@ public:
 
         sort(matched_documents.begin(), matched_documents.end(),
              [](const Document& lhs, const Document& rhs) {
-                 if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+                 // Refactored - use a constant instead of hard-typed value
+                 if (abs(lhs.relevance - rhs.relevance) < EPSILON) {
                      return lhs.rating > rhs.rating;
                  }
                  else {
@@ -179,10 +184,13 @@ private:
         if (ratings.empty()) {
             return 0;
         }
-        int rating_sum = 0;
-        for (const int rating : ratings) {
-            rating_sum += rating;
-        }
+
+        // Refactored - switched to std::accumulate() algorithm
+//        int rating_sum = 0;
+//        for (const int rating : ratings) {
+//            rating_sum += rating;
+//        }
+        int rating_sum = accumulate(ratings.begin(), ratings.end(), 0);
 
         return rating_sum / static_cast<int>(ratings.size());
     }
