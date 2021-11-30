@@ -461,10 +461,54 @@ void TestDocumentRelevance() {
         const auto found_docs = server.FindTopDocuments("cat"s);
         ASSERT_HINT((found_docs[0].relevance - testRelevance) < EPSILON, "Relevance calculation is wrong."s);
 
-        // Добавляем еще документы с совпадениями, проверка сортировки по релевантности
+//Тест сортировки по релевантности выделен в отдельную функцию TestRelevanceSort()
+//        // Добавляем еще документы с совпадениями, проверка сортировки по релевантности
+//        server.AddDocument(doc_id4, content4, DocumentStatus::ACTUAL, ratings4);
+//        const auto found_docs2 = server.FindTopDocuments("cat"s);
+//        ASSERT_HINT(found_docs2[0].relevance > found_docs2[1].relevance, "Documents must be sorted by relevance in descending order."s);
+    }
+}
+
+// Дополнительный тест сортировки документов в порядке убывания релевантности
+void TestRelevanceSort() {
+    const int doc_id1 = 43;
+    const string content1 = "one dog and a rabbit"s;
+    const vector<int> ratings1 = { 1, 2, 3 };
+    const int doc_id2 = 45;
+    const string content2 = "one cat two cat"s;
+    const vector<int> ratings2 = { 7, 8, 9 };
+    const int doc_id3 = 47;
+    const string content3 = "dog from a port"s;
+    const vector<int> ratings3 = { 2, 4, 6 };
+    const int doc_id4 = 49;
+    const string content4 = "dog with a collar"s;
+    const vector<int> ratings4 = { 2, 3, 4 };
+    const int doc_id5 = 51;
+    const string content5 = "black dog with hairy head"s;
+    const vector<int> ratings5 = { 8, 10, 12 };
+
+    {
+        SearchServer server;
+        server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings1);
+        server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings2);
+        server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings3);
         server.AddDocument(doc_id4, content4, DocumentStatus::ACTUAL, ratings4);
-        const auto found_docs2 = server.FindTopDocuments("cat"s);
-        ASSERT_HINT(found_docs2[0].relevance > found_docs2[1].relevance, "Documents must be sorted by relevance in descending order."s);
+        server.AddDocument(doc_id5, content5, DocumentStatus::ACTUAL, ratings5);
+
+        // Найдем документы по запросу "dog collar" (4 документа из 5)
+        const auto found_docs = server.FindTopDocuments("dog collar"s);
+        ASSERT_EQUAL_HINT(found_docs.size(), 4, "4 documents should be matched"s);
+
+        // Убедимся, что в выборку не попал документ doc_id2 (в doc_id2 нет слов из запроса)
+        // Проверяем через алгоритм (не через цикл), чтобы результат можно было легко проверить ASSERTом
+        auto is_cat = [](Document doc) { return doc.id == doc_id2; };
+        auto result = find_if(begin(found_docs), end(found_docs), is_cat);
+        ASSERT_HINT(result == end(found_docs), "Non-matching document in match result."s);
+
+        // В выборке только корректные документы. Проверяем сортировку по релевантности.
+        for (int i = 0; i < 3; ++i) {
+            ASSERT_HINT(found_docs[i].relevance >= found_docs[i + 1].relevance, "Documents must be sorted by relevance in descending order."s);
+        }
     }
 }
 
@@ -485,7 +529,7 @@ void TestDocumentMatching() {
         server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings3);
 
         const auto [words, status] = server.MatchDocument("jet"s, doc_id3);
-        ASSERT_EQUAL_HINT(words.size(), 1u, "1 document should be found"s);
+        ASSERT_EQUAL_HINT(words.size(), 1u, "1 word should be matched"s);
         ASSERT_EQUAL(words[0], "jet"s);
         ASSERT_EQUAL(doc_id3, 2);
         ASSERT_EQUAL(status, DocumentStatus::ACTUAL);
@@ -497,9 +541,9 @@ void TestDocumentMatching() {
         server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings3);
 
         const auto [words, status] = server.MatchDocument("cat city"s, doc_id1);
-        ASSERT_EQUAL_HINT(words.size(), 2u, "2 documents should be found"s);
-        ASSERT_EQUAL(words[0], "cat"s);
-        ASSERT_EQUAL(words[1], "city"s);
+        ASSERT_EQUAL_HINT(words.size(), 2u, "2 words should be matched"s);
+        ASSERT((words[0] == "cat"s) || ((words[0] == "city"s)));
+        ASSERT((words[1] == "cat"s) || ((words[1] == "city"s)));
         ASSERT_EQUAL(doc_id1, 0);
         ASSERT_EQUAL(status, DocumentStatus::ACTUAL);
     }
@@ -510,7 +554,7 @@ void TestDocumentMatching() {
         server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings3);
 
         const auto [words, status] = server.MatchDocument("dog"s, doc_id2);
-        ASSERT_EQUAL_HINT(words.size(), 0u, "No documents should be found"s);
+        ASSERT_EQUAL_HINT(words.size(), 0u, "No words should be matched"s);
     }
 }
 
@@ -569,8 +613,13 @@ void TestMinusWords() {
         // Постепенно уменьшаем количество совпадений, добавляя все больше стоп-слов
         const auto found_docs1 = server.FindTopDocuments("cat"s);
         ASSERT_EQUAL_HINT(found_docs1.size(), 2u, "2 documents should be matched"s);
+        ASSERT((found_docs1[0].id == doc_id2) || (found_docs1[0].id == doc_id3));
+        ASSERT((found_docs1[1].id == doc_id2) || (found_docs1[1].id == doc_id3));
+
         const auto found_docs2 = server.FindTopDocuments("cat -jet"s);
         ASSERT_EQUAL_HINT(found_docs2.size(), 1u, "1 document should be matched"s);
+        ASSERT_EQUAL(found_docs2[0].id, doc_id2);
+
         const auto found_docs3 = server.FindTopDocuments("cat -jet -two"s);
         ASSERT_EQUAL_HINT(found_docs3.size(), 0u, "0 documents should be matched"s);
     }
@@ -674,6 +723,7 @@ void TestStatusMatching() {
 void TestSearchServer() {
     RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
     RUN_TEST(TestDocumentRelevance);
+    RUN_TEST(TestRelevanceSort);
     RUN_TEST(TestDocumentMatching);
     RUN_TEST(TestDocumentAdd);
     RUN_TEST(TestMinusWords);
