@@ -582,7 +582,8 @@ void TestRatingCalc() {
     SearchServer server;
     server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 4, 7, 9, 5 });
     const auto found_docs = server.FindTopDocuments("кот"s);
-    ASSERT_EQUAL(found_docs[0].rating, 6);
+    const int testRating = (4 + 7 + 9 + 5) / 4;    // ==6 (округлено)
+    ASSERT_EQUAL(found_docs[0].rating, testRating);
 }
 
 // Проверка фильтрации документов при помощи предиката
