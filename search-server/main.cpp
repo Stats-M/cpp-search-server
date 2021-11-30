@@ -189,11 +189,11 @@ private:
             return 0;
         }
 
-// Code reviewer' remark 2/2 - refactored - switched to std::accumulate() algorithm
-//        int rating_sum = 0;
-//        for (const int rating : ratings) {
-//            rating_sum += rating;
-//        }
+        // Code reviewer' remark 2/2 - refactored - switched to std::accumulate() algorithm
+        //        int rating_sum = 0;
+        //        for (const int rating : ratings) {
+        //            rating_sum += rating;
+        //        }
         int rating_sum = accumulate(ratings.begin(), ratings.end(), 0);
 
         return rating_sum / static_cast<int>(ratings.size());
@@ -585,6 +585,90 @@ void TestRatingCalc() {
     ASSERT_EQUAL(found_docs[0].rating, 6);
 }
 
+// Проверка фильтрации документов при помощи предиката
+void TestPredicate() {
+    const int doc_id1 = 43;
+    const string content1 = "one dog two dog"s;
+    const vector<int> ratings1 = { 1, 2, 3 };       // рейтинг == 2
+    const int doc_id2 = 45;
+    const string content2 = "one cat two cat"s;
+    const vector<int> ratings2 = { 7, 8, 9 };
+    const int doc_id3 = 47;
+    const string content3 = "dog from a port"s;
+    const vector<int> ratings3 = { 2, 4, 6 };       // рейтинг == 4
+    const int doc_id4 = 49;
+    const string content4 = "dog with a collar"s;
+    const vector<int> ratings4 = { 2, 3, 4 };       // рейтинг == 3
+    const int doc_id5 = 51;
+    const string content5 = "green snake with yellow head"s;
+    const vector<int> ratings5 = { 8, 10, 12 };
+
+    {
+        SearchServer server;
+        server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings1);
+        server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings2);
+        server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings3);
+        server.AddDocument(doc_id4, content4, DocumentStatus::ACTUAL, ratings4);
+        server.AddDocument(doc_id5, content5, DocumentStatus::ACTUAL, ratings5);
+
+        // Найдем документы, содержащие слово "dog" (совпадений должно быть 3 из 5)...
+        // ... и из них предикатом выберем только те, чей рейтинг равен 3 или выше (совпадений должно быть 2 из найденных 3)
+        // В итоговую выборку должны попасть документы doc_id3, doc_id4
+        const auto found_docs = server.FindTopDocuments("dog"s, 
+                                    [](int document_id, DocumentStatus status, int rating) { return rating >= 3; });
+        ASSERT_EQUAL_HINT(found_docs.size(), 2, "2 documents should be matched"s);
+        ASSERT_EQUAL(found_docs[0].id, doc_id3);
+        ASSERT_EQUAL(found_docs[1].id, doc_id4);
+    }
+}
+
+// Проверка поиска документов с заданным статусом
+void TestStatusMatching() {
+    const int doc_id1 = 43;
+    const string content1 = "one dog two dog"s;
+    const vector<int> ratings1 = { 1, 2, 3 };
+    const int doc_id2 = 45;
+    const string content2 = "one cat two cat"s;
+    const vector<int> ratings2 = { 7, 8, 9 };
+    const int doc_id3 = 47;
+    const string content3 = "dog from a port"s;
+    const vector<int> ratings3 = { 2, 4, 6 };
+    const int doc_id4 = 49;
+    const string content4 = "dog with a collar"s;
+    const vector<int> ratings4 = { 2, 3, 4 };
+    const int doc_id5 = 51;
+    const string content5 = "green snake with yellow head"s;
+    const vector<int> ratings5 = { 8, 10, 12 };
+
+    {
+        SearchServer server;
+        server.AddDocument(doc_id1, content1, DocumentStatus::BANNED, ratings1);
+        server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings2);
+        server.AddDocument(doc_id3, content3, DocumentStatus::IRRELEVANT, ratings3);
+        server.AddDocument(doc_id4, content4, DocumentStatus::BANNED, ratings4);
+        server.AddDocument(doc_id5, content5, DocumentStatus::REMOVED, ratings5);
+
+        // Найдем документы по запросу "dog" со статусом BANNED (doc_id1, doc_id4)
+        const auto found_docs1 = server.FindTopDocuments("dog", DocumentStatus::BANNED);
+        ASSERT_EQUAL_HINT(found_docs1.size(), 2, "2 documents should be matched"s);
+        ASSERT_EQUAL(found_docs1[0].id, doc_id1);
+        ASSERT_EQUAL(found_docs1[1].id, doc_id4);
+
+        // Найдем документы по запросу "snake" со статусом REMOVED (doc_id5)
+        const auto found_docs2 = server.FindTopDocuments("snake", DocumentStatus::REMOVED);
+        ASSERT_EQUAL_HINT(found_docs2.size(), 1, "1 document should be matched"s);
+        ASSERT_EQUAL(found_docs2[0].id, doc_id5);
+
+        // Найдем документы по запросу "cat" со статусом IRRELEVANT (нет совпадений)
+        const auto found_docs3 = server.FindTopDocuments("cat", DocumentStatus::IRRELEVANT);
+        ASSERT_EQUAL_HINT(found_docs3.size(), 0, "No document(s) should be matched"s);
+        // Проверим, что "cat" в базе документов имеется и с корректным статусом находится
+        const auto found_docs4 = server.FindTopDocuments("cat", DocumentStatus::ACTUAL);
+        ASSERT_EQUAL_HINT(found_docs4.size(), 1, "1 document should be matched"s);
+        ASSERT_EQUAL(found_docs4[0].id, doc_id2);
+    }
+}
+
 // Функция TestSearchServer является точкой входа для запуска тестов
 void TestSearchServer() {
     RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
@@ -593,6 +677,8 @@ void TestSearchServer() {
     RUN_TEST(TestDocumentAdd);
     RUN_TEST(TestMinusWords);
     RUN_TEST(TestRatingCalc);
+    RUN_TEST(TestPredicate);
+    RUN_TEST(TestStatusMatching);
 }
 
 // --------- Окончание модульных тестов поисковой системы -----------
