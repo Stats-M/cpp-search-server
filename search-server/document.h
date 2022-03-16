@@ -1,17 +1,13 @@
 #pragma once
 
-// #include для type resolution в объявлениях функций:
+// #include РґР»СЏ type resolution РІ РѕР±СЉСЏРІР»РµРЅРёСЏС… С„СѓРЅРєС†РёР№:
 #include <iostream>
 
 struct Document
 {
     Document() = default;
 
-    Document(int id, double relevance, int rating)
-        : id(id)
-        , relevance(relevance)
-        , rating(rating)
-    {}
+    Document(int, double, int);
 
     int id = 0;
     double relevance = 0.0;
