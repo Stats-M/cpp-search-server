@@ -1,7 +1,15 @@
 #include "document.h"
 
-// Для использования оператора ""s
+// Р”Р»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРїРµСЂР°С‚РѕСЂР° ""s
 using namespace std::string_literals;
+
+
+Document::Document(int id, double relevance, int rating)
+    : id(id)
+    , relevance(relevance)
+    , rating(rating)
+{}
+
 
 std::ostream& operator<<(std::ostream& out, const Document& document)
 {
