@@ -5,7 +5,7 @@
 #include "string_processing.h"
 #include "search_server.h"
 #include "read_input_functions.h"
-#include "log_duration.h"
+//#include "log_duration.h"
 
 
 SearchServer::SearchServer(const std::string& stop_words_text)  // Invoke delegating constructor
@@ -35,7 +35,7 @@ void SearchServer::AddDocument(int document_id, std::string_view document, Docum
     for (std::string_view word : words)
     {
         word_to_document_freqs_[word][document_id] += inv_word_count;
-        // Заполняем дополнительный словарь для подсистемы поиска дубликатов (кэш подсистемы)
+        // Р—Р°РїРѕР»РЅСЏРµРј РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ СЃР»РѕРІР°СЂСЊ РґР»СЏ РїРѕРґСЃРёСЃС‚РµРјС‹ РїРѕРёСЃРєР° РґСѓР±Р»РёРєР°С‚РѕРІ (РєСЌС€ РїРѕРґСЃРёСЃС‚РµРјС‹)
         document_to_words_[document_id][word] = word_to_document_freqs_[word][document_id];
     }
     document_ids_.push_back(document_id);
@@ -91,10 +91,10 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
         throw std::out_of_range("Invalid document_id"s);
     }
 
-    // MatchDocument() без политики - вызываем последовательную версию
+    // MatchDocument() Р±РµР· РїРѕР»РёС‚РёРєРё - РІС‹Р·С‹РІР°РµРј РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅСѓСЋ РІРµСЂСЃРёСЋ
     const auto query = ParseQuery(std::execution::seq, raw_query);
 
-    // Сначала проверим минус-слова.
+    // РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂРёРј РјРёРЅСѓСЃ-СЃР»РѕРІР°.
     for (std::string_view word : query.minus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
@@ -103,7 +103,7 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
         }
         if (word_to_document_freqs_.at(word).count(document_id))
         {
-            // Минус-слово из запроса есть в документе. Выходим с пустым результатом.
+            // РњРёРЅСѓСЃ-СЃР»РѕРІРѕ РёР· Р·Р°РїСЂРѕСЃР° РµСЃС‚СЊ РІ РґРѕРєСѓРјРµРЅС‚Рµ. Р’С‹С…РѕРґРёРј СЃ РїСѓСЃС‚С‹Рј СЂРµР·СѓР»СЊС‚Р°С‚РѕРј.
             return { {}, documents_.at(document_id).status };
         }
     }
@@ -130,7 +130,7 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
                                                                                       std::string_view raw_query,
                                                                                       int document_id)
 {
-    // Тело метода дублирует код метода без политик выполнения
+    // РўРµР»Рѕ РјРµС‚РѕРґР° РґСѓР±Р»РёСЂСѓРµС‚ РєРѕРґ РјРµС‚РѕРґР° Р±РµР· РїРѕР»РёС‚РёРє РІС‹РїРѕР»РЅРµРЅРёСЏ
     return SearchServer::MatchDocument(raw_query, document_id);
 }
 
@@ -145,33 +145,33 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
         throw std::out_of_range("Invalid document_id"s);
     }
 
-    // Получаем векторы плюс- и минус-слов параллельным алгоритмом
+    // РџРѕР»СѓС‡Р°РµРј РІРµРєС‚РѕСЂС‹ РїР»СЋСЃ- Рё РјРёРЅСѓСЃ-СЃР»РѕРІ РїР°СЂР°Р»Р»РµР»СЊРЅС‹Рј Р°Р»РіРѕСЂРёС‚РјРѕРј
     const auto query = ParseQuery(policy, raw_query);
 
-    // Проверяем, есть ли среди минус-слов хотя бы 1, входящее в текущий документ
+    // РџСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё СЃСЂРµРґРё РјРёРЅСѓСЃ-СЃР»РѕРІ С…РѕС‚СЏ Р±С‹ 1, РІС…РѕРґСЏС‰РµРµ РІ С‚РµРєСѓС‰РёР№ РґРѕРєСѓРјРµРЅС‚
     if (std::any_of(std::execution::par, query.minus_words.cbegin(), query.minus_words.cend(),
                     [this, document_id](std::string_view word)
                     {
                         const auto it = word_to_document_freqs_.find(word);
-                        // Если минус слово есть среди слов сервера И в заданном документе это слово встечается (== 1)  => true
+                        // Р•СЃР»Рё РјРёРЅСѓСЃ СЃР»РѕРІРѕ РµСЃС‚СЊ СЃСЂРµРґРё СЃР»РѕРІ СЃРµСЂРІРµСЂР° Р РІ Р·Р°РґР°РЅРЅРѕРј РґРѕРєСѓРјРµРЅС‚Рµ СЌС‚Рѕ СЃР»РѕРІРѕ РІСЃС‚РµС‡Р°РµС‚СЃСЏ (== 1)  => true
                         return ((it != word_to_document_freqs_.end()) && (it->second.count(document_id)));
                     })
         )
     {
-        // В запросе есть хотя бы 1 минус-слово, встречающееся в текущем документе.
-        // Возвращаем пустой ответ
+        // Р’ Р·Р°РїСЂРѕСЃРµ РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ 1 РјРёРЅСѓСЃ-СЃР»РѕРІРѕ, РІСЃС‚СЂРµС‡Р°СЋС‰РµРµСЃСЏ РІ С‚РµРєСѓС‰РµРј РґРѕРєСѓРјРµРЅС‚Рµ.
+        // Р’РѕР·РІСЂР°С‰Р°РµРј РїСѓСЃС‚РѕР№ РѕС‚РІРµС‚
         return { {}, documents_.at(document_id).status };
     }
 
                     ///////////////////////////////////////////////
-                    // Если мы здесь, то минус-слов в документе нет
+                    // Р•СЃР»Рё РјС‹ Р·РґРµСЃСЊ, С‚Рѕ РјРёРЅСѓСЃ-СЃР»РѕРІ РІ РґРѕРєСѓРјРµРЅС‚Рµ РЅРµС‚
 
-                    // Пустой вектор совпавших слов
+                    // РџСѓСЃС‚РѕР№ РІРµРєС‚РѕСЂ СЃРѕРІРїР°РІС€РёС… СЃР»РѕРІ
                     std::vector<std::string_view> matched_words{};
-                    // Резервируем память (не более чем количество плюс-слов в запросе)
+                    // Р РµР·РµСЂРІРёСЂСѓРµРј РїР°РјСЏС‚СЊ (РЅРµ Р±РѕР»РµРµ С‡РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РїР»СЋСЃ-СЃР»РѕРІ РІ Р·Р°РїСЂРѕСЃРµ)
                     matched_words.reserve(query.plus_words.size());
 
-                    // Матчинг плюс-слов, версия 2 для последовательной реализации (другой словарь)
+                    // РњР°С‚С‡РёРЅРі РїР»СЋСЃ-СЃР»РѕРІ, РІРµСЂСЃРёСЏ 2 РґР»СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё (РґСЂСѓРіРѕР№ СЃР»РѕРІР°СЂСЊ)
                     const auto& this_doc_words = document_to_words_.at(document_id);
                     for (std::string_view word : query.plus_words)
                     {
@@ -181,7 +181,7 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
                         }
                     }
 
-                    // Удаляем дубликаты из результатов матчинга (версия для последовательной реализации)
+                    // РЈРґР°Р»СЏРµРј РґСѓР±Р»РёРєР°С‚С‹ РёР· СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РјР°С‚С‡РёРЅРіР° (РІРµСЂСЃРёСЏ РґР»СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё)
                     std::sort(std::execution::par, matched_words.begin(), matched_words.end());
                     auto last = std::unique(std::execution::par, matched_words.begin(), matched_words.end());
                     last = matched_words.erase(last, matched_words.end());
@@ -192,17 +192,17 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
 
 void SearchServer::RemoveDocument(int document_id)
 {
-    // Сначала проверяем есть ли документ с таким id. Проверять будем через быстрый map<>
+    // РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂСЏРµРј РµСЃС‚СЊ Р»Рё РґРѕРєСѓРјРµРЅС‚ СЃ С‚Р°РєРёРј id. РџСЂРѕРІРµСЂСЏС‚СЊ Р±СѓРґРµРј С‡РµСЂРµР· Р±С‹СЃС‚СЂС‹Р№ map<>
     if (documents_.count(document_id) == 0)
     {
-        // такого документа нет, выходим
+        // С‚Р°РєРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р° РЅРµС‚, РІС‹С…РѕРґРёРј
         return;
     }
 
-    // Считаем что данные в контейнерах корректны и если id присутствует в documents_,
-    // то такой документ есть и в остальных контейнерах. Удаляем отовсюду.
+    // РЎС‡РёС‚Р°РµРј С‡С‚Рѕ РґР°РЅРЅС‹Рµ РІ РєРѕРЅС‚РµР№РЅРµСЂР°С… РєРѕСЂСЂРµРєС‚РЅС‹ Рё РµСЃР»Рё id РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚ РІ documents_,
+    // С‚Рѕ С‚Р°РєРѕР№ РґРѕРєСѓРјРµРЅС‚ РµСЃС‚СЊ Рё РІ РѕСЃС‚Р°Р»СЊРЅС‹С… РєРѕРЅС‚РµР№РЅРµСЂР°С…. РЈРґР°Р»СЏРµРј РѕС‚РѕРІСЃСЋРґСѓ.
     documents_.erase(document_id);
-    // erase-remove для вектора
+    // erase-remove РґР»СЏ РІРµРєС‚РѕСЂР°
     auto new_end_it = std::remove(document_ids_.begin(), document_ids_.end(), document_id);
     document_ids_.erase(new_end_it, document_ids_.end());
 
@@ -210,10 +210,10 @@ void SearchServer::RemoveDocument(int document_id)
     {
         if (submap.count(document_id) > 0)
         {
-            // Текущее word присутствует в указанном документе document_id. Удаляем.
+            // РўРµРєСѓС‰РµРµ word РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚ РІ СѓРєР°Р·Р°РЅРЅРѕРј РґРѕРєСѓРјРµРЅС‚Рµ document_id. РЈРґР°Р»СЏРµРј.
             submap.erase(document_id);
-            // Если для слова word больше нет ссылок, удаляем и само слово
-            // СЛЕДУЮЩИЙ КОД вызывает провал проверки задания тренажером, отключено
+            // Р•СЃР»Рё РґР»СЏ СЃР»РѕРІР° word Р±РѕР»СЊС€Рµ РЅРµС‚ СЃСЃС‹Р»РѕРє, СѓРґР°Р»СЏРµРј Рё СЃР°РјРѕ СЃР»РѕРІРѕ
+            // РЎР›Р•Р”РЈР®Р©РР™ РљРћР” РІС‹Р·С‹РІР°РµС‚ РїСЂРѕРІР°Р» РїСЂРѕРІРµСЂРєРё Р·Р°РґР°РЅРёСЏ С‚СЂРµРЅР°Р¶РµСЂРѕРј, РѕС‚РєР»СЋС‡РµРЅРѕ
 //            if (submap.size() == 0)
 //            {
 //                word_to_document_freqs_.erase(word);
@@ -227,7 +227,7 @@ void SearchServer::RemoveDocument(int document_id)
 
 const std::map<std::string_view, double>& SearchServer::GetWordFrequencies(int document_id) const
 {
-    // Статические переменные инициализируются при первом обращении, а потом просто используются
+    // РЎС‚Р°С‚РёС‡РµСЃРєРёРµ РїРµСЂРµРјРµРЅРЅС‹Рµ РёРЅРёС†РёР°Р»РёР·РёСЂСѓСЋС‚СЃСЏ РїСЂРё РїРµСЂРІРѕРј РѕР±СЂР°С‰РµРЅРёРё, Р° РїРѕС‚РѕРј РїСЂРѕСЃС‚Рѕ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ
     static std::map<std::string_view, double> word_freqs_;
     word_freqs_.clear();
 
@@ -239,18 +239,24 @@ const std::map<std::string_view, double>& SearchServer::GetWordFrequencies(int d
     return word_freqs_;
 }
 
+SearchServer::Query::Query(size_t size_plus, size_t size_minus) : plus_words(size_plus), minus_words(size_minus)
+{}
+
+SearchServer::Query::Query(size_t size) : plus_words(size), minus_words(size)
+{}
+
 void SearchServer::Query::SortUniq(bool sort_plus)
 {
     if (sort_plus)
     {
-        // Сортировка словаря плюс-слов
+        // РЎРѕСЂС‚РёСЂРѕРІРєР° СЃР»РѕРІР°СЂСЏ РїР»СЋСЃ-СЃР»РѕРІ
         std::sort(std::execution::par, plus_words.begin(), plus_words.end());
         auto last = std::unique(std::execution::par, plus_words.begin(), plus_words.end());
         last = plus_words.erase(last, plus_words.end());
     }
     else
     {
-        // Сортировка словаря минус-слов
+        // РЎРѕСЂС‚РёСЂРѕРІРєР° СЃР»РѕРІР°СЂСЏ РјРёРЅСѓСЃ-СЃР»РѕРІ
         std::sort(std::execution::par, minus_words.begin(), minus_words.end());
         auto last = std::unique(std::execution::par, minus_words.begin(), minus_words.end());
         last = minus_words.erase(last, minus_words.end());
@@ -262,12 +268,12 @@ void SearchServer::Query::SortUniq()
     SortUniq(true);
     SortUniq(false);
 
-    // Сортировка словаря плюс-слов
+    // РЎРѕСЂС‚РёСЂРѕРІРєР° СЃР»РѕРІР°СЂСЏ РїР»СЋСЃ-СЃР»РѕРІ
 //    std::sort(std::execution::par, plus_words.begin(), plus_words.end());
 //    auto last = std::unique(std::execution::par, plus_words.begin(), plus_words.end());
 //    last = plus_words.erase(last, plus_words.end());
 
-    // Сортировка словаря минус-слов
+    // РЎРѕСЂС‚РёСЂРѕРІРєР° СЃР»РѕРІР°СЂСЏ РјРёРЅСѓСЃ-СЃР»РѕРІ
 //    std::sort(std::execution::par, minus_words.begin(), minus_words.end());
 //    last = std::unique(std::execution::par, minus_words.begin(), minus_words.end());
 //    last = minus_words.erase(last, minus_words.end());
