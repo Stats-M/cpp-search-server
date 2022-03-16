@@ -52,12 +52,13 @@ public:
     // с помощью using для удобства
     using Clock = std::chrono::steady_clock;
 
-    LogDuration(std::string_view id, std::ostream& dst_stream = std::cerr)
+    
+    inline LogDuration(std::string_view id, std::ostream& dst_stream = std::cerr)
         : id_(id)
         , dst_stream_(dst_stream) {
     }
 
-    ~LogDuration() {
+    inline ~LogDuration() {
         using namespace std::chrono;
         using namespace std::literals;
 
@@ -65,7 +66,12 @@ public:
         const auto dur = end_time - start_time_;
         dst_stream_ << id_ << ": "sv << duration_cast<milliseconds>(dur).count() << " ms"sv << std::endl;
     }
+    
+    /*
+    LogDuration(std::string_view, std::ostream&);
 
+    ~LogDuration();
+    */
 private:
     const std::string id_;
     const Clock::time_point start_time_ = Clock::now();
