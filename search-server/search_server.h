@@ -1,6 +1,6 @@
 #pragma once
 
-// #include для type resolution в объявлениях функций:
+// #include РґР»СЏ type resolution РІ РѕР±СЉСЏРІР»РµРЅРёСЏС… С„СѓРЅРєС†РёР№:
 #include <string>
 #include <string_view>
 #include <algorithm>
@@ -10,14 +10,14 @@
 #include <tuple>
 #include <map>
 #include <iterator>
-#include <execution>    // для std::execution::parallel_policy
+#include <execution>    // РґР»СЏ std::execution::parallel_policy
 #include <mutex>
 #include <type_traits>
 #include <future>
 
-#include <ostream>      // для тестов
-#include <iostream>     // для тестов
-#include <ios>          // для тестов
+#include <ostream>      // РґР»СЏ С‚РµСЃС‚РѕРІ
+#include <iostream>     // РґР»СЏ С‚РµСЃС‚РѕРІ
+#include <ios>          // РґР»СЏ С‚РµСЃС‚РѕРІ
 
 #include "document.h"
 #include "string_processing.h"
@@ -25,26 +25,26 @@
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 
-// Константа точности сравнения вещественных чисел (значений релевантности)
+// РљРѕРЅСЃС‚Р°РЅС‚Р° С‚РѕС‡РЅРѕСЃС‚Рё СЃСЂР°РІРЅРµРЅРёСЏ РІРµС‰РµСЃС‚РІРµРЅРЅС‹С… С‡РёСЃРµР» (Р·РЅР°С‡РµРЅРёР№ СЂРµР»РµРІР°РЅС‚РЅРѕСЃС‚Рё)
 const double EPSILON = 1e-6;
 
-// Число корзин для разбиения многопоточных словарей
+// Р§РёСЃР»Рѕ РєРѕСЂР·РёРЅ РґР»СЏ СЂР°Р·Р±РёРµРЅРёСЏ РјРЅРѕРіРѕРїРѕС‚РѕС‡РЅС‹С… СЃР»РѕРІР°СЂРµР№
 const size_t BUCKETS_NUM = 8;
 
 class SearchServer
 {
 public:
-    // Шаблонный конструктор на основе контейнера со стоп-словами
+    // РЁР°Р±Р»РѕРЅРЅС‹Р№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РЅР° РѕСЃРЅРѕРІРµ РєРѕРЅС‚РµР№РЅРµСЂР° СЃРѕ СЃС‚РѕРї-СЃР»РѕРІР°РјРё
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words);
 
-    // Конструктор на основе строки со стоп-словами (вызывает шаблонный конструктор)
+    // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РЅР° РѕСЃРЅРѕРІРµ СЃС‚СЂРѕРєРё СЃРѕ СЃС‚РѕРї-СЃР»РѕРІР°РјРё (РІС‹Р·С‹РІР°РµС‚ С€Р°Р±Р»РѕРЅРЅС‹Р№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ)
     explicit SearchServer(const std::string&);
 
-    // Конструктор на основе string_view со стоп-словами (вызывает шаблонный конструктор)
+    // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РЅР° РѕСЃРЅРѕРІРµ string_view СЃРѕ СЃС‚РѕРї-СЃР»РѕРІР°РјРё (РІС‹Р·С‹РІР°РµС‚ С€Р°Р±Р»РѕРЅРЅС‹Р№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ)
     explicit SearchServer(const std::string_view);
 
-    // Метод добавляет новый документ в базу данных поискового сервера
+    // РњРµС‚РѕРґ РґРѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РґРѕРєСѓРјРµРЅС‚ РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С… РїРѕРёСЃРєРѕРІРѕРіРѕ СЃРµСЂРІРµСЂР°
     void AddDocument(int, std::string_view, DocumentStatus, const std::vector<int>&);
 
     template <typename DocumentPredicate>
@@ -73,20 +73,20 @@ public:
 
     std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(std::string_view, int) const;
 
-    // Версия MatchDocument() для политики последовательного выполнения
+    // Р’РµСЂСЃРёСЏ MatchDocument() РґР»СЏ РїРѕР»РёС‚РёРєРё РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РІС‹РїРѕР»РЅРµРЅРёСЏ
     std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(std::execution::sequenced_policy, std::string_view, int);
 
-    // Версия MatchDocument() для политики параллельного выполнения
+    // Р’РµСЂСЃРёСЏ MatchDocument() РґР»СЏ РїРѕР»РёС‚РёРєРё РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ РІС‹РїРѕР»РЅРµРЅРёСЏ
     std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(std::execution::parallel_policy, std::string_view, int);
 
-    // Метод удаляет документ под указанным id изо всех контейнеров
+    // РњРµС‚РѕРґ СѓРґР°Р»СЏРµС‚ РґРѕРєСѓРјРµРЅС‚ РїРѕРґ СѓРєР°Р·Р°РЅРЅС‹Рј id РёР·Рѕ РІСЃРµС… РєРѕРЅС‚РµР№РЅРµСЂРѕРІ
     void RemoveDocument(int);
 
-    // Версия RemoveDocument() с поддержкой параллельного выполнения
+    // Р’РµСЂСЃРёСЏ RemoveDocument() СЃ РїРѕРґРґРµСЂР¶РєРѕР№ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ РІС‹РїРѕР»РЅРµРЅРёСЏ
     template <class ExecutionPolicy>
     void RemoveDocument(ExecutionPolicy&&, int);
 
-    // Метод возвращает словарь частоты слов для документа с указанным id
+    // РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃР»РѕРІР°СЂСЊ С‡Р°СЃС‚РѕС‚С‹ СЃР»РѕРІ РґР»СЏ РґРѕРєСѓРјРµРЅС‚Р° СЃ СѓРєР°Р·Р°РЅРЅС‹Рј id
     const std::map<std::string_view, double>& GetWordFrequencies(int) const;
 
 private:
@@ -94,7 +94,7 @@ private:
     {
         int rating;
         DocumentStatus status;
-        std::string doc_text;   // Исходные строки документа. На их основе конструируются string_view
+        std::string doc_text;   // РСЃС…РѕРґРЅС‹Рµ СЃС‚СЂРѕРєРё РґРѕРєСѓРјРµРЅС‚Р°. РќР° РёС… РѕСЃРЅРѕРІРµ РєРѕРЅСЃС‚СЂСѓРёСЂСѓСЋС‚СЃСЏ string_view
     };
 
     struct QueryWord
@@ -104,7 +104,7 @@ private:
         bool is_stop;
     };
 
-    // Структура запроса для обычных и последовательных алгоритмов
+    // РЎС‚СЂСѓРєС‚СѓСЂР° Р·Р°РїСЂРѕСЃР° РґР»СЏ РѕР±С‹С‡РЅС‹С… Рё РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅС‹С… Р°Р»РіРѕСЂРёС‚РјРѕРІ
     struct Query
     {
         std::vector<std::string_view> plus_words;
@@ -112,17 +112,15 @@ private:
 
         Query() = default;
 
-        explicit Query(size_t size_plus, size_t size_minus) : plus_words(size_plus), minus_words(size_minus)
-        {}
+        explicit Query(size_t, size_t);
 
-        explicit Query(size_t size) : plus_words(size), minus_words(size)
-        {}
+        explicit Query(size_t);
 
-        // Выполняет сортировку и оставление уникальных значений в векторе (эмуляция set).
-        // true для сортировки плюс-слов, false для сортировки минус-слов
+        // Р’С‹РїРѕР»РЅСЏРµС‚ СЃРѕСЂС‚РёСЂРѕРІРєСѓ Рё РѕСЃС‚Р°РІР»РµРЅРёРµ СѓРЅРёРєР°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РІ РІРµРєС‚РѕСЂРµ (СЌРјСѓР»СЏС†РёСЏ set).
+        // true РґР»СЏ СЃРѕСЂС‚РёСЂРѕРІРєРё РїР»СЋСЃ-СЃР»РѕРІ, false РґР»СЏ СЃРѕСЂС‚РёСЂРѕРІРєРё РјРёРЅСѓСЃ-СЃР»РѕРІ
         void SortUniq(bool);
 
-        // Выполняет сортировку и оставление уникальных значений в векторе (эмуляция set).
+        // Р’С‹РїРѕР»РЅСЏРµС‚ СЃРѕСЂС‚РёСЂРѕРІРєСѓ Рё РѕСЃС‚Р°РІР»РµРЅРёРµ СѓРЅРёРєР°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№ РІ РІРµРєС‚РѕСЂРµ (СЌРјСѓР»СЏС†РёСЏ set).
         void SortUniq();
     };
 
@@ -132,7 +130,7 @@ private:
     std::vector<int> document_ids_;
 
     //NEW
-    // Словарь "номер документа - словарь частоты его слов"
+    // РЎР»РѕРІР°СЂСЊ "РЅРѕРјРµСЂ РґРѕРєСѓРјРµРЅС‚Р° - СЃР»РѕРІР°СЂСЊ С‡Р°СЃС‚РѕС‚С‹ РµРіРѕ СЃР»РѕРІ"
     std::map<int, std::map<std::string_view, double>> document_to_words_;
 
     bool IsStopWord(std::string_view) const;
@@ -150,24 +148,24 @@ private:
 
     double ComputeWordInverseDocumentFreq(std::string_view word) const;
 
-    // Специализированный шаблон для последовательного выполнения
+    // РЎРїРµС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ С€Р°Р±Р»РѕРЅ РґР»СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РІС‹РїРѕР»РЅРµРЅРёСЏ
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(std::execution::sequenced_policy, 
                                            const Query&,
                                            DocumentPredicate) const;
-    // Специализированный шаблон для параллельного выполнения
+    // РЎРїРµС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Р№ С€Р°Р±Р»РѕРЅ РґР»СЏ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ РІС‹РїРѕР»РЅРµРЅРёСЏ
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(std::execution::parallel_policy, 
                                            const Query&,
                                            DocumentPredicate) const;
-    // Версия шаблона для вызова без указания политики выполнения (вызывает seq-версию)
+    // Р’РµСЂСЃРёСЏ С€Р°Р±Р»РѕРЅР° РґР»СЏ РІС‹Р·РѕРІР° Р±РµР· СѓРєР°Р·Р°РЅРёСЏ РїРѕР»РёС‚РёРєРё РІС‹РїРѕР»РЅРµРЅРёСЏ (РІС‹Р·С‹РІР°РµС‚ seq-РІРµСЂСЃРёСЋ)
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(const Query&,
                                            DocumentPredicate) const;
 };
 
 
-// Определения шаблонных методов (вынесены вне класса)
+// РћРїСЂРµРґРµР»РµРЅРёСЏ С€Р°Р±Р»РѕРЅРЅС‹С… РјРµС‚РѕРґРѕРІ (РІС‹РЅРµСЃРµРЅС‹ РІРЅРµ РєР»Р°СЃСЃР°)
 
 template <typename ExecutionPolicy, typename ForwardRange, typename Function>
 void ForEach(const ExecutionPolicy& policy, ForwardRange& range, Function function)
@@ -280,9 +278,9 @@ std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, s
 template <typename ExecutionPolicy>
 SearchServer::Query SearchServer::ParseQuery(ExecutionPolicy&& policy, std::string_view text) const
 {
-    // Разбиваем запрос на слова
+    // Р Р°Р·Р±РёРІР°РµРј Р·Р°РїСЂРѕСЃ РЅР° СЃР»РѕРІР°
     const std::vector<std::string_view> query_words = SplitIntoWordsView(text);
-    // Резервируем память только для плюс-слов
+    // Р РµР·РµСЂРІРёСЂСѓРµРј РїР°РјСЏС‚СЊ С‚РѕР»СЊРєРѕ РґР»СЏ РїР»СЋСЃ-СЃР»РѕРІ
     SearchServer::Query result;
     result.plus_words.reserve(query_words.size());
 
@@ -316,13 +314,13 @@ std::vector<Document> SearchServer::FindAllDocuments(std::execution::sequenced_p
                                                      const SearchServer::Query& query,
                                                      DocumentPredicate document_predicate) const
 {
-    // Вектор результатов
+    // Р’РµРєС‚РѕСЂ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
     std::vector<Document> matched_documents;
 
-    // Стандартный однопоточный словарь
+    // РЎС‚Р°РЅРґР°СЂС‚РЅС‹Р№ РѕРґРЅРѕРїРѕС‚РѕС‡РЅС‹Р№ СЃР»РѕРІР°СЂСЊ
     std::map<int, double> document_to_relevance;
 
-    // Обрабатываем плюс-слова
+    // РћР±СЂР°Р±Р°С‚С‹РІР°РµРј РїР»СЋСЃ-СЃР»РѕРІР°
     for (std::string_view word : query.plus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
@@ -340,7 +338,7 @@ std::vector<Document> SearchServer::FindAllDocuments(std::execution::sequenced_p
         }
     }
 
-    // Обрабатываем минус-слова, удаляем из найденных документы с минус-словами
+    // РћР±СЂР°Р±Р°С‚С‹РІР°РµРј РјРёРЅСѓСЃ-СЃР»РѕРІР°, СѓРґР°Р»СЏРµРј РёР· РЅР°Р№РґРµРЅРЅС‹С… РґРѕРєСѓРјРµРЅС‚С‹ СЃ РјРёРЅСѓСЃ-СЃР»РѕРІР°РјРё
     for (std::string_view word : query.minus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
@@ -353,7 +351,7 @@ std::vector<Document> SearchServer::FindAllDocuments(std::execution::sequenced_p
         }
     }
 
-    // Заполняем вектор с найденными документами
+    // Р—Р°РїРѕР»РЅСЏРµРј РІРµРєС‚РѕСЂ СЃ РЅР°Р№РґРµРЅРЅС‹РјРё РґРѕРєСѓРјРµРЅС‚Р°РјРё
     for (const auto [document_id, relevance] : document_to_relevance)
     {
         matched_documents.push_back(
@@ -369,19 +367,19 @@ std::vector<Document> SearchServer::FindAllDocuments(std::execution::parallel_po
                                                      const SearchServer::Query& query,
                                                      DocumentPredicate document_predicate) const
 {
-    // Вектор результатов
+    // Р’РµРєС‚РѕСЂ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
     std::vector<Document> matched_documents;
 
-    // Словарь с поддержкой параллельных алгоритмов
+    // РЎР»РѕРІР°СЂСЊ СЃ РїРѕРґРґРµСЂР¶РєРѕР№ РїР°СЂР°Р»Р»РµР»СЊРЅС‹С… Р°Р»РіРѕСЂРёС‚РјРѕРІ
     ConcurrentMap<int, double> document_to_relevance(BUCKETS_NUM);
 
-    // Обработка плюс-слов
-    // Кастомный алгоритм с улучшенной параллелизацией
+    // РћР±СЂР°Р±РѕС‚РєР° РїР»СЋСЃ-СЃР»РѕРІ
+    // РљР°СЃС‚РѕРјРЅС‹Р№ Р°Р»РіРѕСЂРёС‚Рј СЃ СѓР»СѓС‡С€РµРЅРЅРѕР№ РїР°СЂР°Р»Р»РµР»РёР·Р°С†РёРµР№
     ForEach(policy,
             query.plus_words,
             [this, &document_to_relevance, &document_predicate](std::string_view word)
             {
-                // Если плюс-слово есть в словаре частот слов
+                // Р•СЃР»Рё РїР»СЋСЃ-СЃР»РѕРІРѕ РµСЃС‚СЊ РІ СЃР»РѕРІР°СЂРµ С‡Р°СЃС‚РѕС‚ СЃР»РѕРІ
                 if (!word_to_document_freqs_.count(word) == 0)
                 {
                     const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
@@ -397,8 +395,8 @@ std::vector<Document> SearchServer::FindAllDocuments(std::execution::parallel_po
             }
     );
 
-    // Обработка минус-слов. Модификация словаря document_to_relevance, полученного по плюс-словам
-    // Кастомный алгоритм с улучшенной параллелизацией
+    // РћР±СЂР°Р±РѕС‚РєР° РјРёРЅСѓСЃ-СЃР»РѕРІ. РњРѕРґРёС„РёРєР°С†РёСЏ СЃР»РѕРІР°СЂСЏ document_to_relevance, РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РїРѕ РїР»СЋСЃ-СЃР»РѕРІР°Рј
+    // РљР°СЃС‚РѕРјРЅС‹Р№ Р°Р»РіРѕСЂРёС‚Рј СЃ СѓР»СѓС‡С€РµРЅРЅРѕР№ РїР°СЂР°Р»Р»РµР»РёР·Р°С†РёРµР№
     ForEach(policy,
             query.minus_words,
             [this, &document_to_relevance](std::string_view word)
@@ -407,7 +405,7 @@ std::vector<Document> SearchServer::FindAllDocuments(std::execution::parallel_po
                 {
                     for (const auto [document_id, _] : word_to_document_freqs_.at(word))
                     {
-                        // Erase у ConcurrentMap потокобезопасный
+                        // Erase Сѓ ConcurrentMap РїРѕС‚РѕРєРѕР±РµР·РѕРїР°СЃРЅС‹Р№
                         document_to_relevance.Erase(document_id);
                     }
                 }
@@ -436,10 +434,10 @@ std::vector<Document> SearchServer::FindAllDocuments(const SearchServer::Query& 
 template <class ExecutionPolicy>
 void SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id)
 {
-    // Берем только ссылки на слова удаляемого документа
+    // Р‘РµСЂРµРј С‚РѕР»СЊРєРѕ СЃСЃС‹Р»РєРё РЅР° СЃР»РѕРІР° СѓРґР°Р»СЏРµРјРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р°
     const auto& word_freqs = document_to_words_.at(document_id);  // map<string, double>
 
-    // Создаём вектор указателей на слова необходимого размера
+    // РЎРѕР·РґР°С‘Рј РІРµРєС‚РѕСЂ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° СЃР»РѕРІР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂР°Р·РјРµСЂР°
     std::vector<const std::string*> words(word_freqs.size());
     std::transform(
         policy,
@@ -448,14 +446,16 @@ void SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id)
         [](const auto& word)
         {
             // word - map<string, double>
-            // Кладем указатель на слово
+            // РљР»Р°РґРµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃР»РѕРІРѕ
             return &word.first;
         });
 
-    // Удаляем слова, перебирая указатели на них
+    std::mutex mutex_;
+    // РЈРґР°Р»СЏРµРј СЃР»РѕРІР°, РїРµСЂРµР±РёСЂР°СЏ СѓРєР°Р·Р°С‚РµР»Рё РЅР° РЅРёС…
     std::for_each(policy, words.begin(), words.end(),
                   [this, document_id](const std::string* word)
                   {
+                      const std::lock_guard<std::mutex> lock(mutex_);
                       word_to_document_freqs_.at(*word).erase(document_id);
                   });
 
