@@ -20,7 +20,7 @@
 ```
 
 Пример использования кода:
-
+```
     SearchServer search_server("and with"s);
 
     for (
@@ -47,9 +47,9 @@
     for (const Document& document : search_server.FindTopDocuments(execution::par, "curly nasty cat"s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; })) {
         PrintDocument(document);
     }
+```
 
-
-#Результат:
+Результат:
 ```
 ACTUAL by default:
 { document_id = 2, relevance = 0.866434, rating = 1 }
