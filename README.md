@@ -49,7 +49,7 @@
     }
 ```
 
-Результат:
+Вывод:
 ```
 ACTUAL by default:
 { document_id = 2, relevance = 0.866434, rating = 1 }
