@@ -20,7 +20,7 @@
 ```
 
 Пример использования кода:
-```
+```cpp
     SearchServer search_server("and with"s);
 
     for (
