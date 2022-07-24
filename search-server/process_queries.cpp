@@ -10,7 +10,7 @@
 
 std::vector<std::vector<Document>> ProcessQueries(const SearchServer& search_server, const std::vector<std::string>& queries)
 {
-    // Время работы вашей функции должно быть по крайней мере вдвое меньше, чем у тривиального решения:
+    // Р’СЂРµРјСЏ СЂР°Р±РѕС‚С‹ РІР°С€РµР№ С„СѓРЅРєС†РёРё РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РїРѕ РєСЂР°Р№РЅРµР№ РјРµСЂРµ РІРґРІРѕРµ РјРµРЅСЊС€Рµ, С‡РµРј Сѓ С‚СЂРёРІРёР°Р»СЊРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ:
     //for (const std::string& query : queries)
     //{
     //    documents_lists.push_back(search_server.FindTopDocuments(query));
@@ -18,20 +18,20 @@ std::vector<std::vector<Document>> ProcessQueries(const SearchServer& search_ser
 
     std::vector<std::vector<Document>> results(queries.size());
 
-    std::transform(std::execution::par, // Только С++17!
-                queries.begin(), queries.end(),  // входной диапазон 1
-                results.begin(),             // входной диапазон 2
-                //0,  // начальное значение
-                //plus<>{},  // reduce-операция (группирующая функция)
-                [&search_server](const std::string& param)    // при захвате &search_server в C++20 алгоритм медленнее в 1,5 раза дефолтного!
+    std::transform(std::execution::par, // РўРѕР»СЊРєРѕ РЎ++17!
+                queries.begin(), queries.end(),  // РІС…РѕРґРЅРѕР№ РґРёР°РїР°Р·РѕРЅ 1
+                results.begin(),             // РІС…РѕРґРЅРѕР№ РґРёР°РїР°Р·РѕРЅ 2
+                //0,  // РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
+                //plus<>{},  // reduce-РѕРїРµСЂР°С†РёСЏ (РіСЂСѓРїРїРёСЂСѓСЋС‰Р°СЏ С„СѓРЅРєС†РёСЏ)
+                [&search_server](const std::string& param)    // РїСЂРё Р·Р°С…РІР°С‚Рµ &search_server РІ C++20 Р°Р»РіРѕСЂРёС‚Рј РјРµРґР»РµРЅРЅРµРµ РІ 1,5 СЂР°Р·Р° РґРµС„РѕР»С‚РЅРѕРіРѕ!
                 {
                     return search_server.FindTopDocuments(param);
-                });  // map-операция
+                });  // map-РѕРїРµСЂР°С†РёСЏ
 
     return results;
 }
 
-// Время работы вашей функции должно быть по крайней мере вдвое меньше, чем у тривиального решения DefaultProcess
+// Р’СЂРµРјСЏ СЂР°Р±РѕС‚С‹ РІР°С€РµР№ С„СѓРЅРєС†РёРё РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РїРѕ РєСЂР°Р№РЅРµР№ РјРµСЂРµ РІРґРІРѕРµ РјРµРЅСЊС€Рµ, С‡РµРј Сѓ С‚СЂРёРІРёР°Р»СЊРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ DefaultProcess
 std::vector<std::vector<Document>> DefaultProcess(const SearchServer& search_server, const std::vector<std::string>& queries)
 {
     std::vector<std::vector<Document>> results(queries.size());
@@ -51,18 +51,18 @@ std::vector<Document> ProcessQueriesJoined(const SearchServer& search_server, co
     std::vector<Document> results_v;
     //std::vector<std::vector<Document>> intermediate_results = ProcessQueries(search_server, queries);
 
-/*    std::transform(std::execution::par, // Только С++17!
-                   queries.begin(), queries.end(),  // входной диапазон 1
-                   intermediate_results.begin(),             // входной диапазон 2
-                   //0,  // начальное значение
-                   //plus<>{},  // reduce-операция (группирующая функция)
-                   [&search_server](const std::string& param)    // при захвате &search_server в C++20 алгоритм медленнее в 1,5 раза дефолтного!
+/*    std::transform(std::execution::par, // РўРѕР»СЊРєРѕ РЎ++17!
+                   queries.begin(), queries.end(),  // РІС…РѕРґРЅРѕР№ РґРёР°РїР°Р·РѕРЅ 1
+                   intermediate_results.begin(),             // РІС…РѕРґРЅРѕР№ РґРёР°РїР°Р·РѕРЅ 2
+                   //0,  // РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
+                   //plus<>{},  // reduce-РѕРїРµСЂР°С†РёСЏ (РіСЂСѓРїРїРёСЂСѓСЋС‰Р°СЏ С„СѓРЅРєС†РёСЏ)
+                   [&search_server](const std::string& param)    // РїСЂРё Р·Р°С…РІР°С‚Рµ &search_server РІ C++20 Р°Р»РіРѕСЂРёС‚Рј РјРµРґР»РµРЅРЅРµРµ РІ 1,5 СЂР°Р·Р° РґРµС„РѕР»С‚РЅРѕРіРѕ!
                    {
                        return search_server.FindTopDocuments(param);
-                   });  // map-операция
+                   });  // map-РѕРїРµСЂР°С†РёСЏ
 */
-    // Объединяем полученные результаты в плоский список (операции O(1))
-    // Не const чтобы конструктор списка мог воспользоваться move placement
+    // РћР±СЉРµРґРёРЅСЏРµРј РїРѕР»СѓС‡РµРЅРЅС‹Рµ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РІ РїР»РѕСЃРєРёР№ СЃРїРёСЃРѕРє (РѕРїРµСЂР°С†РёРё O(1))
+    // РќРµ const С‡С‚РѕР±С‹ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ СЃРїРёСЃРєР° РјРѕРі РІРѕСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ move placement
 /*
     for (auto& vector : intermediate_results)
     {
