@@ -1,6 +1,6 @@
 #pragma once
 
-// #include для type resolution в объявлениях функций:
+// #include РґР»СЏ type resolution РІ РѕР±СЉСЏРІР»РµРЅРёСЏС… С„СѓРЅРєС†РёР№:
 #include "search_server.h"
 #include "document.h"
 #include <vector>
@@ -12,7 +12,7 @@ class RequestQueue
 public:
     explicit RequestQueue(const SearchServer&);
 
-    // "обертки" для всех методов поиска, чтобы сохранять результаты для статистики
+    // "РѕР±РµСЂС‚РєРё" РґР»СЏ РІСЃРµС… РјРµС‚РѕРґРѕРІ РїРѕРёСЃРєР°, С‡С‚РѕР±С‹ СЃРѕС…СЂР°РЅСЏС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РґР»СЏ СЃС‚Р°С‚РёСЃС‚РёРєРё
     template <typename DocumentPredicate>
     std::vector<Document> AddFindRequest(const std::string&, DocumentPredicate);
 
