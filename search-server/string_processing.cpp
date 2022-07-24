@@ -1,6 +1,6 @@
 #include "string_processing.h"
 
-// Функция преобразует разделенный пробелами текст в вектор строк
+// Р¤СѓРЅРєС†РёСЏ РїСЂРµРѕР±СЂР°Р·СѓРµС‚ СЂР°Р·РґРµР»РµРЅРЅС‹Р№ РїСЂРѕР±РµР»Р°РјРё С‚РµРєСЃС‚ РІ РІРµРєС‚РѕСЂ СЃС‚СЂРѕРє
 std::vector<std::string> SplitIntoWords(const std::string& text)
 {
     std::vector<std::string> words;
@@ -38,7 +38,7 @@ std::vector<std::string_view> SplitIntoWordsView(std::string_view str_v)
     const int64_t pos_end = str_v.npos;
     while (true)
     {
-        // Убираем лидирующие пробелы
+        // РЈР±РёСЂР°РµРј Р»РёРґРёСЂСѓСЋС‰РёРµ РїСЂРѕР±РµР»С‹
         while ((!str_v.empty()) && (str_v.front() == ' '))
         {
             str_v.remove_prefix(1);
