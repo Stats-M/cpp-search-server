@@ -1,6 +1,6 @@
 #pragma once
 
-// #include для type resolution в объявлениях функций:
+// #include РґР»СЏ type resolution РІ РѕР±СЉСЏРІР»РµРЅРёСЏС… С„СѓРЅРєС†РёР№:
 #include <string>
 
 std::string ReadLine();
